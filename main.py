@@ -1,5 +1,6 @@
 import logging
 import transformers
+import torch
 
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
@@ -25,6 +26,17 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+
+@app.get("/device")
+async def get_device():
+    if torch.cuda.is_available():
+        device = f"GPU: {torch.cuda.get_device_name(0)}"
+    elif torch.backends.mps.is_available():
+        device = "Apple MPS"
+    else:
+        device = "CPU"
+    return {"device": device}
 
 
 @app.post("/rogue_score")
